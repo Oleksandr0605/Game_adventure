@@ -2,7 +2,6 @@
 Game
 """
 import random
-from functools import reduce
 
 class Weapon:
     """
@@ -11,6 +10,8 @@ class Weapon:
     Attributes:
         name: name of this weapon
         damage: how many health this weapon can take
+    >>> w = Weapon("Sword", "right")
+    >>> assert str(w) == "Sword, damage: {}".format(w.damage)
     """
     def __init__(self, name: str, strong_side: str) -> None:
         self.name = name
@@ -23,6 +24,12 @@ class Weapon:
 
 class Bonus:
     """
+    Bonus class that can add health to the player
+
+    Attributes:
+        health: amount of health in bonus
+    >>> b = Bonus()
+    >>> assert b.health >= 20 and b.health <= 30
     """
     def __init__(self) -> None:
         self.health = random.randint(20, 30)
@@ -37,6 +44,9 @@ class Person:
         phrase: what person talk to you at the meeting
         weapon: object of class Weapon that person holds
         damage: person's damage with weapon
+    >>> p = Person("Alice", "Hello, nice to meet you!")
+    >>> assert p.name == "Alice"
+    >>> assert p.phrase == "Hello, nice to meet you!"
     """
     def __init__(self, name: str, phrase: str) -> None:
         self.name = name
@@ -79,6 +89,7 @@ class Enemy(Person):
 
     def fight(self, player):
         """
+        Simulate the fight with enemy
         """
         print(f"Клас ворога: {self.clas}. В нього {self.health} життя")
         player.choose_weapon()
@@ -103,6 +114,18 @@ class Room:
         goods: list of goods (weapon or bonuses)
         person: person (friend or enemy)
         name: number of the room
+
+    >>> goods = [Weapon("sword", "melee"), Weapon("bow", "ranged")]
+    >>> person = Friend("John", "hehe")
+    >>> room = Room(goods, person, "living room", None, "dining room")
+    >>> room.name
+    \'living room\'
+    >>> room.goods[0].name
+    \'sword\'
+    >>> room.view_rooms()
+    \'down room\'
+    >>> room.view_rooms(goto=True, inp="down room")
+    \'dining room\'
     """
     def __init__(self, goods: list, person, name: str, up_room = None,\
                  down_room = None, left_room = None, right_room = None,) -> None:
@@ -117,6 +140,7 @@ class Room:
 
     def view_weapon(self) -> str:
         """
+        Shows weapon in room
         """
         return ''.join("".join(("- ", weapon.name,\
                                 " (damage: ", str(weapon.damage),\
@@ -125,6 +149,7 @@ class Room:
 
     def view_rooms(self, inp = "", goto = False):
         """
+        Shows all avaliable rooms
         """
         rooms = {}
         rooms["up room"] = self.up_room
@@ -138,6 +163,11 @@ class Room:
 
 class Field:
     """
+    Field class. Save all data about field in list of rooms
+
+    Attributes:
+        rooms: matrix of rooms
+        size: size of field
     """
     def __init__(self, rooms: list[Room], size: int) -> None:
         self.rooms = rooms
@@ -185,6 +215,14 @@ class Bag:
 
 class Player:
     """
+    Player class
+
+    Attributes:
+        room: room where player is placed
+        friends: list of player's friends
+        bag: bag where player store weapons
+        health: player's health
+        weapon: weapon that player holds
     """
     def __init__(self, room: Room, friends: list[Friend], bag: Bag, weapon: Weapon) -> None:
         self.room = room
@@ -192,8 +230,10 @@ class Player:
         self.bag = bag
         self.health = 100
         self.weapon = weapon
+
     def choose_weapon(self):
         """
+        Give an oportunity to choose weapon
         """
         print("Обери якою зброєю ти хочеш битися: ")
         print(self.bag.view_weapon())
@@ -209,11 +249,13 @@ class Player:
 
     def player_damage(self):
         """
+        Calculate player damage
         """
         return self.weapon.damage + sum([elm.weapon.damage for elm in self.friends])
 
     def view_friends(self) -> str:
         """
+        Returns the info about player's friends
         """
         return ''.join("".join(("\n- ", friend.name,\
                                 " (weapon: ", str(friend.weapon), ")"\
@@ -226,7 +268,7 @@ def generate_goods() -> list:
     """
     goods = []
     weapon_name = {"нечиста сила": ["Свята вода", "Хрест", "Кадило", "Молитва",\
-                                    "Китайський час з Аліекспресу"],\
+                                    "Китайський чай з Аліекспресу"],\
                    "неприємний монстр": ["Пес Патрон", "Гарпун водолаза", "Вилка", "Сковорідка",\
                                       "Нашийник", "Вонючий носок (вонючіший ніж монстр)"],\
                    "цивільний": ["Молоток судді", "Заява в поліцію",\
@@ -251,7 +293,8 @@ def generate_person() -> Enemy:
                           "цивільний": ["Крадій дітей", "Зла продавщиця (тьотя Валя)", "Безхатько",\
                                         "Чоловік з агресивною собакою", "Грицак і Джеджора"]}
     clases_friend_names = ["Борис Ґудзяк", "Степан Фединяк", "сестра Антонія",\
-                           "сестра Єлена", "Магістр", "Костя Грицюк", "Петро Мозіль", "Микола Висоцький"]
+                           "сестра Єлена", "Магістр", "Костя Грицюк", "Петро Мозіль",\
+                           "Микола Висоцький"]
     if num == 1:
         clas = random.choice(list(clases_enemy_names.keys()))
         name = random.choice(clases_enemy_names[clas])
@@ -286,6 +329,7 @@ def generate_field(size) -> list[Room]:
 
 def print_field(matrix, player):
     """
+    Prints field with player placing and show which rooms are visited
     """
     matrix[int(player.room.name[0])][int(player.room.name[1])] = "P"
     print(f"\n\
@@ -303,6 +347,7 @@ def print_field(matrix, player):
 
 def visited_rooms(field: list[list[Room]]) -> bool:
     """
+    Checks whether all rooms are visited
     """
     flag = False
     for rooms in field:
@@ -321,24 +366,22 @@ def main():
     print("Привіт, радий вітати тебе у нашій грі")
     print("Натисни Enter щоби грати")
     input()
-    # print("4) 4x4;  5) 5x5;  6) 6x6")
-    # field_size = input(">>> ")
-    # while field_size != '4' and field_size != '5' and field_size != '6':
-    #     field_size = input("Введіть 4, 5 або 6\n>>> ")
-    # field_size = int(field_size)
     field_size = 4
     field = Field(generate_field(field_size), field_size)
     weap = Weapon("Палка", "цивільний")
     player = Player(field.rooms[0][0], [], Bag(weapons=[weap]), weap)
+
     matrix = []
     for ind in range(field_size):
         temp = []
         for jnd in range(field_size):
             temp.append(" ")
         matrix.append(temp)
+
     print("Твій герой знаходиться в тій кімнаті де є буква P, V - там де вже був герой:")
     print_field(matrix, player)
     print("Тепер твоє завдання дослідити всі кімнати, щасти!")
+
     while visited_rooms(field.rooms):
         if not player.room.visited:
             player.room.visited = True
@@ -348,7 +391,7 @@ def main():
             print(f"Friends: {player.view_friends()}\n")
             print(f"Ти заходиш в кімнату, а посеред неї стоїть {player.room.person.name}")
             print(f"\'{player.room.person.phrase}\'\n")
-            
+
             if isinstance(player.room.person, Friend):
                 player.friends.append(player.room.person)
                 print("Обери яку зброю ти хочеш дати своєму другові: ")
@@ -356,13 +399,16 @@ def main():
                 player.bag.give_weapon(player)
             else:
                 player.room.person.fight(player)
+
             if player.health < 0:
                 return "Гра закінчена, ти програв"
 
-            print(f"Вітаю, ти отримав бонус, він дає тобі {player.room.goods[0].health} одиниць життя!\n")
+            print(f"Вітаю, ти отримав бонус, він дає тобі {player.room.goods[0].health} \
+одиниць життя!\n")
             player.health += player.room.goods.pop(0).health
             print(f"У цій кімнаті є:\n{player.room.view_weapon()}")
             print("Впиши номер зброї (починаючи від 1) яку ти б хотів забрати собі в рюкзак:")
+
             flag = True
             while flag:
                 try:
@@ -371,6 +417,7 @@ def main():
                     flag = False
                 except:
                     print("Не коректне число, введи ще раз")
+
             print("\nТепер ти можеш піти у іншу кімнату. Введи у яку ти хочеш піти:")
             print(player.room.view_rooms())
             matrix[int(player.room.name[0])][int(player.room.name[1])] = "V"
@@ -382,6 +429,7 @@ def main():
                 except:
                     print("Не коректна кімната, введи ще раз")
             print_field(matrix, player)
+
         else:
             print("Обери у яку кімнату хочеш піти: ")
             matrix[int(player.room.name[0])][int(player.room.name[1])] = "V"
@@ -393,11 +441,12 @@ def main():
                 except:
                     print("Не коректна кімната, введи ще раз")
             print_field(matrix, player)
+
     print("Вітаю! Ти Пройшов гру!")
     return None
 
 
-
-
 if __name__ == "__main__":
     main()
+    # import doctest
+    # print(doctest.testmod())
