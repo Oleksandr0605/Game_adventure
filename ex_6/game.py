@@ -400,7 +400,7 @@ def main():
             else:
                 player.room.person.fight(player)
 
-            if player.health < 0:
+            if player.health <= 0:
                 return "Гра закінчена, ти програв"
 
             print(f"Вітаю, ти отримав бонус, він дає тобі {player.room.goods[0].health} \
